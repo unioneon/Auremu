@@ -1,0 +1,23 @@
+name: Windows build
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test SDK integration with isolated fixtures
+        shell: pwsh
+        run: ./tests/run.ps1
+      - name: Package installer and portable
+        shell: pwsh
+        run: ./packaging/build-release.ps1
+      - name: Verify release payload and design
+        shell: pwsh
+        run: ./tests/check-release.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Auremu-windows-x64
+          path: |
+            artifacts/Auremu-*-setup.exe
+            artifacts/Auremu-*-portable.zip
+            artifacts/SHA256SUMS.txt

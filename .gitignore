@@ -1,0 +1,11 @@
+dist/
+artifacts/
+data/
+runtime/
+tests/output/
+*.log
+*.user
+*.tmp
+*.avd/
+adbkey*
+settings.json

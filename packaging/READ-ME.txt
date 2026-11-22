@@ -1,0 +1,18 @@
+Auremu 0.1.0 — Windows x64 preview
+
+Run Auremu.cmd or bin\Auremu.exe. Extract the complete portable ZIP first.
+On first launch accept the Android SDK terms and use Install Android.
+The wizard downloads official SDK Tools, Temurin JDK 21, Emulator, ADB,
+and the Android 17 Google Play x86_64 system image. Internet and 15 GB
+of free space are required. Enable Windows Hypervisor Platform (WHPX)
+and CPU virtualization, then restart Windows if requested.
+
+Portable data: data\ beside bin\ and runtime\.
+Installed data: %LOCALAPPDATA%\Auremu\data.
+No personal Android device, account or saved session is included.
+Removing the installed app preserves Android data.
+
+Downloads and instructions: https://github.com/unioneon/Auremu
+This is an unsigned preview build; no performance guarantee is made.
+Google Play and Google services have their own terms and data practices.
+Third-party components and source links: THIRD-PARTY-NOTICES.md.
