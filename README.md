@@ -1,115 +1,139 @@
-<p align="center"><img src="docs/preview.png" alt="Auremu — Android на вашем ПК" width="100%"></p>
+<p align="center"><img src="docs/preview.png" alt="Auremu — Android on your desktop" width="100%"></p>
+
+<p align="center"><strong>Your Android. Your desktop.</strong><br>A Windows interface for the official Android Emulator.</p>
 
 <p align="center">
-  <a href="https://github.com/unioneon/Auremu/releases/latest"><strong>Скачать Auremu</strong></a> ·
-  <a href="#первый-запуск">Первый запуск</a> ·
-  <a href="https://github.com/unioneon/Auremu/issues">Сообщить о проблеме</a>
+<a href="https://github.com/unioneon/Auremu/releases/download/v0.1.0/Auremu-0.1.0-windows-x64-setup.exe"><img src="docs/download-installer.svg" alt="Download Windows installer" height="56"></a>&nbsp;&nbsp;
+<a href="https://github.com/unioneon/Auremu/releases/download/v0.1.0/Auremu-0.1.0-windows-x64-portable.zip"><img src="docs/download-portable.svg" alt="Download portable ZIP" height="56"></a>
 </p>
 
-<p align="center">Windows 10/11 x64 · Android 17 · Phone & tablet · Preview</p>
+<p align="center">Windows 10/11 x64 · Android 17 · Phone & tablet · Preview<br>
+<a href="https://github.com/unioneon/Auremu/releases/latest">Release notes & checksums</a> · <a href="#first-launch">First launch</a> · <a href="#device-settings">Device settings</a> · <a href="https://github.com/unioneon/Auremu/issues">Report an issue</a></p>
 
-**Auremu** — приложение для запуска официального Android Emulator в аккуратном
-окне Windows. Обычный рабочий стол Android, Google Play, режимы телефона и
-планшета, светлая и тёмная оболочка, боковая панель управления.
+## Android in a desktop frame
 
-*An independent Windows desktop interface for the official Android Emulator.
-Fresh Android device, phone/tablet modes and a clean desktop frame.*
+The standard Android home screen and Google Play in a Windows window, with phone
+and tablet modes, light and dark frames, rounded screen edges and a compact side
+toolbar. Install APKs, transfer files, take screenshots, record the screen and
+send GPS coordinates from the manager.
 
-## Скачать
+Auremu uses the **official Android Emulator** for virtualization and **scrcpy**
+for display and input. It is an independent application, not a new hypervisor or
+an official Google product.
 
-| Вариант | Как пользоваться | Где хранятся Android и приложения |
+## Download
+
+| Package | How to use it | Where Android data lives |
 |---|---|---|
-| [Установочный EXE](https://github.com/unioneon/Auremu/releases/download/v0.1.0/Auremu-0.1.0-windows-x64-setup.exe) | Установка для текущего пользователя, ярлык в меню «Пуск» | `%LOCALAPPDATA%\Auremu\data` |
-| [Portable ZIP](https://github.com/unioneon/Auremu/releases/download/v0.1.0/Auremu-0.1.0-windows-x64-portable.zip) | Распаковать **всю** папку и открыть `Auremu.cmd` | `data` рядом с `bin` и `runtime` |
+| **Installer EXE** | Installs for your Windows account; adds a Start menu shortcut | `%LOCALAPPDATA%\Auremu\data` |
+| **Portable ZIP** | Extract the complete archive, then open `Auremu.cmd` | `data` beside `bin` and `runtime` |
 
-В [релизе](https://github.com/unioneon/Auremu/releases/latest) есть SHA-256 для проверки файлов.
-Сборки пока не подписаны сертификатом. Это предварительная версия: возможны
-ошибки и различия в работе на разных видеокартах.
+Both packages include Auremu and its display module. **Android downloads
+separately on first launch.** No account, saved device or session is included.
+SHA-256 checksums accompany the release. These preview builds are unsigned;
+performance and compatibility vary by PC. 60 FPS is not guaranteed.
 
-## Первый запуск
+## First launch
 
-1. Включите виртуализацию CPU в BIOS/UEFI и компонент Windows **Windows Hypervisor Platform**. После изменения компонентов перезагрузите ПК.
-2. Установите Auremu или распакуйте portable-пакет в папку с правом записи.
-3. В мастере первого запуска прочитайте условия Android SDK и образа Google Play, отметьте согласие и нажмите **«Установить Android»**.
-4. Дождитесь загрузки SDK Tools, Temurin JDK 21, Emulator, ADB и образа **Android 17 Google Play x86_64**. Будет создано новое устройство `Auremu_Android_17`.
-5. Нажмите **«Запустить Android»**. Первый холодный запуск занимает больше времени, чем последующие запуски со снимком Quick Boot.
+1. Enable CPU virtualization in BIOS/UEFI and **Windows Hypervisor Platform** in Windows Features. Restart Windows after changing these features.
+2. Install Auremu or extract the complete portable ZIP into a writable folder.
+3. In the first-run wizard, read the Android SDK terms, tick the acceptance box and choose **Install Android** (`Установить Android` in the current Russian UI).
+4. Wait for SDK Tools, Temurin JDK 21, Emulator, ADB and **Android 17 Google Play x86_64** to download. Auremu creates a fresh `Auremu_Android_17` device.
+5. Select **Start Android** (`Запустить Android`). The first cold boot takes longer than subsequent Quick Boot starts.
 
-Android **не включён** в EXE/ZIP: при первой установке нужны интернет и минимум
-15 ГБ свободного места. Для скачивания SDK Android Studio устанавливать не нужно.
-Если SDK уже установлен, мастер позволяет подключить его; в нём должны быть
-Command-line Tools, Emulator, platform-tools и нужный образ. Для SDK-инструментов
-нужен JDK 21 (`JAVA_HOME` или JDK рядом с SDK в папке `java`).
+Internet and **at least 15 GB of free space** are required. Android Studio is
+not needed. You can connect an existing SDK with Command-line Tools, Emulator,
+platform-tools and the required image. SDK tools need JDK 21 through `JAVA_HOME`
+or a JDK in the `java` folder beside the SDK folder.
 
-Требования: Windows 10/11 x64, .NET Framework 4.8, процессор Intel/AMD с
-аппаратной виртуализацией и WHPX. Рекомендуется 16 ГБ RAM для комфортной работы.
-Windows on ARM в этом релизе не поддерживается.
+**Requirements:** Windows 10/11 x64, .NET Framework 4.8, Intel/AMD CPU with
+hardware virtualization and WHPX. 16 GB of system RAM is recommended.
+Windows on ARM is not supported in this release.
 
-[Официальная настройка аппаратного ускорения](https://developer.android.com/studio/run/emulator-acceleration)
-· [Условия Android SDK](https://developer.android.com/studio/terms)
+[Official acceleration guide](https://developer.android.com/studio/run/emulator-acceleration)
+· [Android SDK terms](https://developer.android.com/studio/terms)
 
-## Что умеет
+## Device settings
 
-- Переключение телефона и планшета; единые скругления и приглушённые иконки.
-- Стандартный лаунчер Android из официального образа, без подмены на Auremu HOME.
-- Кнопки «Назад», «Домой», «Недавние» в боковой панели.
-- Установка APK, передача файлов, скриншоты, запись экрана, поворот и GPS.
-- Настройка CPU, RAM и графики; обновление Emulator и ADB через SDK.
-- Quick Boot с одним холодным повтором при неудачном восстановлении снимка.
+Select **Manager** (`Менеджер`) in the top bar, then **Configure device**
+(`Настроить устройство`) beneath the preview. Choose CPU cores, RAM and graphics,
+then **Save** (`Сохранить`). Changes apply on the next Android start; saving does
+not change the memory of an already running virtual machine.
 
-Здесь используется **официальный Android Emulator**, а не собственный гипервизор.
-Достижение 60 FPS и превосходство над другими эмуляторами не гарантируются.
-Счётчик FPS показывает кадры потока отображения scrcpy; на неподвижном рабочем
-столе его значение не является игровым бенчмарком. Нужны измерения при движении.
+<p align="center"><img src="docs/manager.png" alt="Auremu manager: Configure device is below the central preview" width="900"></p>
+<p align="center"><img src="docs/device-settings.png" alt="Device settings dialog showing CPU cores, memory and graphics" width="520"><br><sub>Device settings reference, supplied by the product author. Current UI language: Russian.</sub></p>
 
-## Данные и приватность
+| Setting | Purpose | Starting point |
+|---|---|---|
+| CPU cores | Virtual CPU count | 4 cores |
+| Memory, MB | RAM assigned to Android | 4096 MB; leave RAM available for Windows |
+| Graphics | Rendering backend | `auto`; try `host` for GPU rendering or `software` for compatibility |
+| Phone / tablet | Android display shape | Two device buttons in the top bar |
+| Android SDK | Tool installation and updates | **SDK images** in the manager top bar |
 
-Публичные пакеты создаются из списка программных файлов. В них нет AVD,
-снимков, аккаунтов, ключей ADB, пользовательских настроек или сохранённых сессий.
-Ваш Android создаётся локально. Auremu не добавляет рекламный SDK или службу
-аналитики. Образ **Google Play содержит службы Google**, у которых свои условия
-и сетевые обращения; этот выпуск не заявляется как Android без трекеров.
+The manager's right panel contains APK install, file transfer, screenshot,
+recording, rotation and GPS controls. In the player, use the side toolbar for
+these actions and **Back**, **Home**, **Recent apps** near its lower edge.
 
-Удаление установленного приложения сохраняет Android в
-`%LOCALAPPDATA%\Auremu\data`. В portable-версии удаление всей папки удалит и
-ваши данные. Не публикуйте свою папку `data` и не передавайте её другим людям.
-Для разработчиков предусмотрена переменная `AUREMU_DATA_DIR` для отдельного
-каталога данных.
+## Performance and troubleshooting
 
-## Если Android не запускается
+The FPS counter reports the **scrcpy capture stream**, not a game benchmark.
+Frames are produced when Android's screen changes, so a static desktop can
+report a low value or zero. Measure performance while content is moving.
 
-Проверьте WHPX, виртуализацию CPU, свободную RAM и место на диске. В менеджере
-есть **«Журнал и диагностика»**. При проблемах с видеодрайвером попробуйте
-`auto` или `software` в параметрах графики и полностью перезапустите устройство.
-Смена CPU/RAM применяется при следующем запуске. Перед обновлением SDK остановите Android.
+If Android does not start, check WHPX, BIOS virtualization, free RAM and disk
+space, then open **Logs and diagnostics** (`Журнал и диагностика`) in the manager.
+Try `auto` or `software` graphics for GPU driver issues. Stop Android before SDK
+updates. Quick Boot retries once with a cold start if snapshot restoration fails;
+it does not wipe the device.
 
-При сообщении о проблеме укажите версию Windows, CPU/GPU, версию Auremu и
-обезличенный фрагмент журнала. Не прикладывайте образы дисков, аккаунты или ключи.
+For issue reports, include Windows version, CPU/GPU, Auremu version and an
+anonymized log excerpt. Do not upload device images, accounts or ADB keys.
 
-## Сборка из исходников
+## Your data stays separate
 
-Нужны Windows и компилятор .NET Framework 4.8. Node.js не нужен для сборки приложения.
+Release packages are built from an explicit list of program files. They contain
+no AVDs, snapshots, accounts, ADB keys, personal settings or saved sessions.
+Auremu adds no advertising SDK or analytics service. **The Google Play image
+includes Google services** with their own terms and network activity; this is
+not described as tracker-free Android.
+
+Uninstalling preserves `%LOCALAPPDATA%\Auremu\data`. Deleting the entire portable
+folder also deletes its Android data. Do not share your `data` folder.
+Developers can set `AUREMU_DATA_DIR` for an isolated data directory.
+
+## Build from source
+
+Use Windows and the .NET Framework 4.8 compiler. Node.js is not needed to build the app.
 
 ```powershell
 .\build.ps1
 .\tests\run.ps1
 .\packaging\build-release.ps1
+.\tests\check-release.ps1
 ```
 
-Последняя команда скачает официальный scrcpy 5.0.1, проверит SHA-256 и создаст
-установщик, portable ZIP и контрольные суммы в `artifacts`. Для уже скачанного
-дистрибутива: `-ScrcpyDirectory C:\path\to\scrcpy-win64-v5.0.1`.
-Само приложение собирается в `dist`. `start.cmd` запускает исходную сборку.
-CI собирает те же пакеты на Windows.
+Packaging downloads official scrcpy 5.0.1, verifies its pinned SHA-256, then
+creates an installer, portable ZIP and checksums in `artifacts`. To reuse an
+existing vendor distribution, pass `-ScrcpyDirectory C:\path\to\scrcpy-win64-v5.0.1`.
+The app builds into `dist`; `start.cmd` runs the development build. GitHub Actions
+runs the same build and package checks on Windows.
 
-Автотесты проверяют обработку SDK, изоляцию AVD, вызовы инструментов и ошибки
-на подставных CLI. Они не заменяют проверку реального Android на разных ПК.
+Tests cover SDK protocol fixtures, AVD isolation, process failures, frame
+geometry, smooth corners and release contents. They do not replace real Android
+testing across different PCs. See [CHANGELOG.md](CHANGELOG.md) for limits.
 
-Состав: `src` — WPF и запуск Android; `assets` — логотипы и утверждённая геометрия;
-`packaging` — установка и portable; `tests` — проверки; `docs` — превью.
+| Folder | Contents |
+|---|---|
+| `src` | WPF app and Android runtime integration |
+| `assets` | Brand files and approved frame geometry |
+| `packaging` | Per-user installer and portable packaging |
+| `tests` | SDK, layout, corner and package checks |
+| `docs` | Product preview and screenshots |
 
-## Компоненты и условия
+## Components and terms
 
-См. [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md): scrcpy и его зависимости,
-условия Android SDK и JDK. Auremu не связан с Google или Genymobile.
-Исходники опубликованы для ознакомления; открытая лицензия на код и бренд
-Auremu в этом выпуске не предоставлена.
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) lists scrcpy dependencies,
+SDK terms and JDK information. Auremu is not affiliated with Google or Genymobile.
+Source is published for inspection; this release does not grant a general
+open-source license to the Auremu code or branding.
