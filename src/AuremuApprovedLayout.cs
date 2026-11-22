@@ -20,7 +20,7 @@ namespace Auremu {
  }
  public sealed class ApprovedDesign {
   public List<DesignFrame> frames;
-  public static ApprovedDesign Load(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("ApprovedLayout.json")){if(stream==null)throw new Exception("Не найден утверждённый макет Auremu.");using(var reader=new StreamReader(stream))return new JavaScriptSerializer().Deserialize<ApprovedDesign>(reader.ReadToEnd());}}
+  public static ApprovedDesign Load(){using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("ApprovedLayout.json")){if(stream==null)throw new Exception("Approved Auremu layout is missing.");using(var reader=new StreamReader(stream))return new JavaScriptSerializer().Deserialize<ApprovedDesign>(reader.ReadToEnd());}}
   public DesignFrame Player(string mode,string theme){return frames.First(f=>f.id==(mode=="mobile"?"mobile":"tablet")+"-"+theme);}
  }
  public sealed partial class Desktop {
@@ -31,8 +31,8 @@ namespace Auremu {
   DesignFrame PlayerDesign {get{return approvedDesign.Player(runtime.Engine.Settings.Form,Dark?"dark":"light");}}
 
   void BuildApprovedPlayer(){
-   player=new Grid{Visibility=Visibility.Collapsed};approvedCanvas=new Canvas{ClipToBounds=true};player.Children.Add(approvedCanvas);
-   display=new Grid();loadText=Text("Android загружается…",18,true);loadText.Margin=new Thickness(16);loadText.HorizontalAlignment=HorizontalAlignment.Center;loadText.VerticalAlignment=VerticalAlignment.Center;
+   player=new Grid{Visibility=Visibility.Collapsed};approvedCanvas=new Canvas{ClipToBounds=true,Background=Brushes.Transparent};player.Children.Add(approvedCanvas);
+   display=new Grid();loadText=Text("Android is starting…",18,true);loadText.Margin=new Thickness(16);loadText.HorizontalAlignment=HorizontalAlignment.Center;loadText.VerticalAlignment=VerticalAlignment.Center;
    display.Children.Add(loadText);host.Visibility=Visibility.Collapsed;host.HorizontalAlignment=HorizontalAlignment.Center;host.VerticalAlignment=VerticalAlignment.Center;display.Children.Add(host);approvedCanvas.Children.Add(display);
    display.SizeChanged+=(s,e)=>FitDisplay();player.SizeChanged+=(s,e)=>LayoutApprovedPlayer();
    approvedCanvas.MouseLeftButtonDown+=(s,e)=>{if(e.GetPosition(approvedCanvas).Y>=64||Ancestor<Button>(e.OriginalSource as DependencyObject)!=null)return;if(e.ClickCount==2)ToggleMaximize();else Window.DragMove();};
@@ -72,7 +72,7 @@ namespace Auremu {
     case"mode-phone":await SetMode("mobile");break;
     case"mode-tablet":await SetMode("tablet");break;
     case"manager-return":case"tool-8":ShowManager();break;
-    case"theme":await Work(async()=>{await runtime.SetTheme(Dark?"light":"dark");BuildHeader();},"Тема изменена");break;
+    case"theme":await Work(async()=>{await runtime.SetTheme(Dark?"light":"dark");BuildHeader();},"Theme changed");break;
     case"minimize":Window.WindowState=WindowState.Minimized;break;
     case"maximize":ToggleMaximize();break;
     case"close":Window.Close();break;

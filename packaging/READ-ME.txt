@@ -1,4 +1,4 @@
-Auremu 0.1.0 — Windows x64 preview
+Auremu 0.1.1 — Windows x64 preview
 
 Run Auremu.cmd or bin\Auremu.exe. Extract the complete portable ZIP first.
 On first launch accept the Android SDK terms and use Install Android.

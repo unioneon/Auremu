@@ -3,8 +3,8 @@
 <p align="center"><strong>Your Android. Your desktop.</strong><br>A Windows interface for the official Android Emulator.</p>
 
 <p align="center">
-<a href="https://github.com/unioneon/Auremu/releases/download/v0.1.0/Auremu-0.1.0-windows-x64-setup.exe"><img src="docs/download-installer.svg" alt="Download Windows installer" height="56"></a>&nbsp;&nbsp;
-<a href="https://github.com/unioneon/Auremu/releases/download/v0.1.0/Auremu-0.1.0-windows-x64-portable.zip"><img src="docs/download-portable.svg" alt="Download portable ZIP" height="56"></a>
+<a href="https://github.com/unioneon/Auremu/releases/download/v0.1.1/Auremu-0.1.1-windows-x64-setup.exe"><img src="docs/download-installer.svg" alt="Download Windows installer" height="56"></a>&nbsp;&nbsp;
+<a href="https://github.com/unioneon/Auremu/releases/download/v0.1.1/Auremu-0.1.1-windows-x64-portable.zip"><img src="docs/download-portable.svg" alt="Download portable ZIP" height="56"></a>
 </p>
 
 <p align="center">Windows 10/11 x64 · Android 17 · Phone & tablet · Preview<br>
@@ -20,6 +20,18 @@ send GPS coordinates from the manager.
 Auremu uses the **official Android Emulator** for virtualization and **scrcpy**
 for display and input. It is an independent application, not a new hypervisor or
 an official Google product.
+
+## Running Android
+
+Real screenshots of Android running inside Auremu, with the English desktop UI.
+
+### Phone mode
+
+<p align="center"><a href="docs/android-phone.jpg"><img src="docs/android-phone.jpg" alt="Android running in Auremu phone mode" height="680"></a></p>
+
+### Tablet mode
+
+<p align="center"><a href="docs/android-tablet.jpg"><img src="docs/android-tablet.jpg" alt="Android running in Auremu tablet mode" width="100%"></a></p>
 
 ## Download
 
@@ -37,9 +49,9 @@ performance and compatibility vary by PC. 60 FPS is not guaranteed.
 
 1. Enable CPU virtualization in BIOS/UEFI and **Windows Hypervisor Platform** in Windows Features. Restart Windows after changing these features.
 2. Install Auremu or extract the complete portable ZIP into a writable folder.
-3. In the first-run wizard, read the Android SDK terms, tick the acceptance box and choose **Install Android** (`Установить Android` in the current Russian UI).
+3. In the first-run wizard, read the Android SDK terms, tick the acceptance box and choose **Install Android**.
 4. Wait for SDK Tools, Temurin JDK 21, Emulator, ADB and **Android 17 Google Play x86_64** to download. Auremu creates a fresh `Auremu_Android_17` device.
-5. Select **Start Android** (`Запустить Android`). The first cold boot takes longer than subsequent Quick Boot starts.
+5. Select **Start Android**. The first cold boot takes longer than subsequent Quick Boot starts.
 
 Internet and **at least 15 GB of free space** are required. Android Studio is
 not needed. You can connect an existing SDK with Command-line Tools, Emulator,
@@ -55,13 +67,13 @@ Windows on ARM is not supported in this release.
 
 ## Device settings
 
-Select **Manager** (`Менеджер`) in the top bar, then **Configure device**
-(`Настроить устройство`) beneath the preview. Choose CPU cores, RAM and graphics,
-then **Save** (`Сохранить`). Changes apply on the next Android start; saving does
+Select **Manager** in the top bar, then **Configure device**
+beneath the preview. Choose CPU cores, RAM and graphics,
+then **Save**. Changes apply on the next Android start; saving does
 not change the memory of an already running virtual machine.
 
 <p align="center"><img src="docs/manager.png" alt="Auremu manager: Configure device is below the central preview" width="900"></p>
-<p align="center"><img src="docs/device-settings.png" alt="Device settings dialog showing CPU cores, memory and graphics" width="520"><br><sub>Device settings reference, supplied by the product author. Current UI language: Russian.</sub></p>
+<p align="center"><img src="docs/device-settings.jpg" alt="Device settings dialog showing CPU cores, memory and graphics" width="520"><br><sub>Configure CPU cores, Android RAM and the graphics backend, then save and restart Android.</sub></p>
 
 | Setting | Purpose | Starting point |
 |---|---|---|
@@ -82,7 +94,7 @@ Frames are produced when Android's screen changes, so a static desktop can
 report a low value or zero. Measure performance while content is moving.
 
 If Android does not start, check WHPX, BIOS virtualization, free RAM and disk
-space, then open **Logs and diagnostics** (`Журнал и диагностика`) in the manager.
+space, then open **Logs and diagnostics** in the manager.
 Try `auto` or `software` graphics for GPU driver issues. Stop Android before SDK
 updates. Quick Boot retries once with a cold start if snapshot restoration fails;
 it does not wipe the device.

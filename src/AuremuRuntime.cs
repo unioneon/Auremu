@@ -36,41 +36,44 @@ namespace Auremu
   public string Root {get{return Path.GetFullPath(Engine.Root);}}
   public string MirrorTitle {get{return "AuremuDisplay-"+Serial;}}
   public Runtime(){Engine.Log=value=>Log(value);AspectRatio=Engine.Settings.Form=="mobile"?9d/16:16d/9;}
-  public Task<string> Adb(params string[] args){if(Serial==null)throw new Exception("Android ещё не запущен.");return Engine.Exec(Engine.Adb,new[]{"-s",Serial}.Concat(args).ToArray());}
+  public Task<string> Adb(params string[] args){if(Serial==null)throw new Exception("Android is not running yet.");return Engine.Exec(Engine.Adb,new[]{"-s",Serial}.Concat(args).ToArray());}
   public async Task EnsureDevice()
   {
    var config=Path.Combine(Engine.AvdRoot,Name+".avd","config.ini");if(File.Exists(config)){var existingLines=File.ReadAllLines(config).ToList();var desired=new Dictionary<string,string>{{"hw.cpu.ncore",Engine.Settings.Cores.ToString()},{"hw.ramSize",Engine.Settings.Memory.ToString()}};bool changed=false;foreach(var v in desired)if(!existingLines.Contains(v.Key+"="+v.Value)){existingLines.RemoveAll(x=>x.StartsWith(v.Key+"="));existingLines.Add(v.Key+"="+v.Value);changed=true;}if(changed)File.WriteAllLines(config,existingLines,new UTF8Encoding(false));return;}
-   await Engine.Catalog(false);if(!Engine.Packages.Any(p=>p.Id==Image&&p.Installed))throw new Exception("Установите "+AndroidLabel+" в разделе «Образы SDK».");
-   Status("Создаём устройство Android 17…");await Engine.Create(Name,Image);
+   await Engine.Catalog(false);if(!Engine.Packages.Any(p=>p.Id==Image&&p.Installed))throw new Exception("Install "+AndroidLabel+" from SDK images.");
+   Status("Creating Android 17 device…");await Engine.Create(Name,Image);
    var values=new Dictionary<string,string>{{"hw.lcd.width",Engine.Settings.Form=="mobile"?"1080":"1920"},{"hw.lcd.height",Engine.Settings.Form=="mobile"?"1920":"1080"},{"hw.lcd.density",Engine.Settings.Form=="mobile"?"420":"240"},{"hw.initialOrientation",Engine.Settings.Form=="mobile"?"portrait":"landscape"},{"hw.camera.back","none"},{"hw.camera.front","none"},{"hw.audioInput","no"},{"hw.keyboard.lid","no"},{"disk.dataPartition.size","6G"}};
    var lines=File.ReadAllLines(config).Where(x=>!values.Keys.Any(k=>x.StartsWith(k+"="))).ToList();lines.AddRange(values.Select(v=>v.Key+"="+v.Value));File.WriteAllLines(config,lines,new UTF8Encoding(false));Engine.Save();
   }
-  static int FreePort(){for(int port=5580;port<5680;port+=2){TcpListener a=null,b=null;try{a=new TcpListener(IPAddress.Loopback,port);b=new TcpListener(IPAddress.Loopback,port+1);a.Start();b.Start();return port;}catch(SocketException){}finally{if(a!=null)a.Stop();if(b!=null)b.Stop();}}throw new Exception("Не найден свободный порт Android Emulator.");}
+  static int FreePort(){for(int port=5580;port<5680;port+=2){TcpListener a=null,b=null;try{a=new TcpListener(IPAddress.Loopback,port);b=new TcpListener(IPAddress.Loopback,port+1);a.Start();b.Start();return port;}catch(SocketException){}finally{if(a!=null)a.Stop();if(b!=null)b.Stop();}}throw new Exception("No free Android Emulator port was found.");}
   public async Task Start(bool cold=false)
   {
-   if(Ready)return;if(Starting||Stopping)throw new Exception("Дождитесь завершения текущего запуска или остановки.");Starting=true;stopRequested=false;
+   if(Ready)return;if(Starting||Stopping)throw new Exception("Wait for Android to finish starting or stopping.");Starting=true;stopRequested=false;
    try
    {
-    await EnsureDevice();Status("Проверяем WHPX…");var check=await Runner.Run(Engine.Emulator,new[]{"-accel-check"},Engine.Settings.Sdk,Engine.AvdRoot,15000);Log(check.Output);if(check.Code!=0)throw new Exception("Аппаратное ускорение недоступно. Проверьте Windows Hypervisor Platform и виртуализацию CPU.");
+    await EnsureDevice();Status("Checking WHPX…");var check=await Runner.Run(Engine.Emulator,new[]{"-accel-check"},Engine.Settings.Sdk,Engine.AvdRoot,15000);Log(check.Output);if(check.Code!=0)throw new Exception("Hardware acceleration is unavailable. Check Windows Hypervisor Platform and CPU virtualization.");
+    // A brand-new device has no Quick Boot state. Do not interrupt its first cold boot after 40 seconds.
+    string snapshot=Path.Combine(Engine.AvdRoot,Name+".avd","snapshots","default_boot");
+    if(!File.Exists(Path.Combine(snapshot,"snapshot.pb"))||File.Exists(Path.Combine(snapshot,"ram.img.dirty")))cold=true;
     int port=FreePort();Serial="emulator-"+port;var flags=new List<string>{"-avd",Name,"-port",port.ToString(),"-no-window","-no-boot-anim","-no-audio","-no-metrics","-gpu",Engine.Settings.Gpu,"-accel","on"};if(cold)flags.Add("-no-snapshot-load");
-    Status("Запускается Android 17…");Emulator=StartProcess(Engine.Emulator,flags);var clock=Stopwatch.StartNew();
+    Status("Starting Android 17…");Emulator=StartProcess(Engine.Emulator,flags);var clock=Stopwatch.StartNew();
     while(clock.Elapsed<TimeSpan.FromMinutes(5))
     {
-     if(stopRequested)throw new OperationCanceledException("Запуск Android отменён.");
+     if(stopRequested)throw new OperationCanceledException("Android startup cancelled.");
      if(!cold&&(Emulator.HasExited||clock.Elapsed>=TimeSpan.FromSeconds(40))){
-      Log("Quick Boot не завершился; повторяем холодный запуск без загрузки снимка и без сброса данных.");
-      Status("Быстрый запуск не удался · запускаем Android без снимка…");
+      Log("Quick Boot did not finish; retrying a cold boot without loading a snapshot or wiping data.");
+      Status("Quick Boot failed · starting without a snapshot…");
       if(!Emulator.HasExited){Runner.KillTree(Emulator);await Task.Run(()=>Emulator.WaitForExit(10000));}
-      if(stopRequested)throw new OperationCanceledException("Запуск Android отменён.");
+      if(stopRequested)throw new OperationCanceledException("Android startup cancelled.");
       cold=true;flags.Add("-no-snapshot-load");Emulator=StartProcess(Engine.Emulator,flags);clock.Restart();continue;
      }
-     if(Emulator.HasExited)throw new Exception("Android Emulator завершился с кодом "+Emulator.ExitCode+". Откройте журнал.");
+     if(Emulator.HasExited)throw new Exception("Android Emulator exited with code "+Emulator.ExitCode+". Open the log.");
      var r=await Runner.Run(Engine.Adb,new[]{"-s",Serial,"shell","getprop","sys.boot_completed"},Engine.Settings.Sdk,Engine.AvdRoot,6000);
      if(r.Code==0&&r.Output.Trim()=="1")break;await Task.Delay(350);
     }
-    if(clock.Elapsed>=TimeSpan.FromMinutes(5))throw new Exception("Android не завершил загрузку за пять минут. Подробности в журнале.");
-    if(stopRequested)throw new OperationCanceledException("Запуск Android отменён.");
-    Status(Stock?"Открываем рабочий стол Android…":"Подготавливаем рабочий стол Auremu…");await Provision();if(stopRequested)throw new OperationCanceledException("Запуск Android отменён.");Ready=true;Log("Android готов за "+clock.Elapsed.TotalSeconds.ToString("F2",CultureInfo.InvariantCulture)+" с (включая настройку при первом запуске).");Status(AndroidLabel+" · WHPX");
+    if(clock.Elapsed>=TimeSpan.FromMinutes(5))throw new Exception("Android did not finish booting within five minutes. Check the log.");
+    if(stopRequested)throw new OperationCanceledException("Android startup cancelled.");
+    Status(Stock?"Opening the Android home screen…":"Preparing the Auremu home screen…");await Provision();if(stopRequested)throw new OperationCanceledException("Android startup cancelled.");Ready=true;Log("Android ready in "+clock.Elapsed.TotalSeconds.ToString("F2",CultureInfo.InvariantCulture)+" seconds (including initial setup).");Status(AndroidLabel+" · WHPX");
    }
    catch{if(Emulator!=null&&!Emulator.HasExited){try{Runner.KillTree(Emulator);}catch{}}Ready=false;Serial=null;throw;}
    finally{Starting=false;}
@@ -81,9 +84,9 @@ namespace Auremu
    var p=new Process{StartInfo=info,EnableRaisingEvents=true};p.OutputDataReceived+=(s,e)=>{if(e.Data!=null)ReadLog(e.Data);};p.ErrorDataReceived+=(s,e)=>{if(e.Data!=null)ReadLog(e.Data);};p.Start();p.StandardInput.Close();p.BeginOutputReadLine();p.BeginErrorReadLine();return p;
   }
   void ReadLog(string line){if(line.StartsWith("INFO: Texture"))mirrorFrameReady=true;var fps=Regex.Match(line,@"(\d+) fps");if(fps.Success)Fps=int.Parse(fps.Groups[1].Value);Log(line);}
-  public string MirrorExecutable {get{foreach(var tools in new[]{Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"..","runtime","tools")),Path.Combine(Root,"tools")})if(Directory.Exists(tools)){var dir=Directory.GetDirectories(tools,"scrcpy-win64-*").OrderByDescending(x=>x).FirstOrDefault(x=>File.Exists(Path.Combine(x,"scrcpy.exe")));if(dir!=null)return Path.Combine(dir,"scrcpy.exe");}throw new Exception("Не найден модуль отображения scrcpy. Распакуйте весь пакет Auremu.");}}
-  public void StartMirror(){if(!Ready)throw new Exception("Android ещё загружается.");if(Mirror!=null&&!Mirror.HasExited)return;mirrorFrameReady=false;Mirror=StartProcess(MirrorExecutable,new[]{"-s",Serial,"--window-title",MirrorTitle,"--window-borderless","--window-width=640","--window-height=360","--render-driver=opengl","--hwdec=disabled","--render-fit=stretched","--max-fps=60","--video-bit-rate=12M","--no-clipboard-autosync","--print-fps","--stay-awake"});}
-  public async Task WaitMirrorReady(){for(int i=0;i<200;i++){if(stopRequested)throw new OperationCanceledException();if(Mirror==null||Mirror.HasExited)throw new Exception("Модуль отображения завершился до получения кадра Android.");if(mirrorFrameReady)return;await Task.Delay(100);}throw new Exception("Модуль отображения не получил первый кадр Android за 20 секунд.");}
+  public string MirrorExecutable {get{foreach(var tools in new[]{Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"..","runtime","tools")),Path.Combine(Root,"tools")})if(Directory.Exists(tools)){var dir=Directory.GetDirectories(tools,"scrcpy-win64-*").OrderByDescending(x=>x).FirstOrDefault(x=>File.Exists(Path.Combine(x,"scrcpy.exe")));if(dir!=null)return Path.Combine(dir,"scrcpy.exe");}throw new Exception("scrcpy display module is missing. Extract the complete Auremu package.");}}
+  public void StartMirror(){if(!Ready)throw new Exception("Android is still starting.");if(Mirror!=null&&!Mirror.HasExited)return;mirrorFrameReady=false;Mirror=StartProcess(MirrorExecutable,new[]{"-s",Serial,"--window-title",MirrorTitle,"--window-borderless","--window-width=640","--window-height=360","--render-driver=direct3d11","--hwdec=auto","--render-fit=stretched","--max-fps=60","--video-bit-rate=12M","--no-clipboard-autosync","--print-fps","--stay-awake"});}
+  public async Task WaitMirrorReady(){for(int i=0;i<200;i++){if(stopRequested)throw new OperationCanceledException();if(Mirror==null||Mirror.HasExited)throw new Exception("Display module exited before receiving an Android frame.");if(mirrorFrameReady)return;await Task.Delay(100);}throw new Exception("Display module did not receive the first Android frame within 20 seconds.");}
   public async Task Provision()
   {
    if(Stock){
@@ -140,15 +143,20 @@ namespace Auremu
   public async Task Capture(string path)
   {
    var pi=Runner.Info(Engine.Adb,new[]{"-s",Serial,"exec-out","screencap","-p"},Engine.Settings.Sdk,Engine.AvdRoot);
-   using(var p=new Process{StartInfo=pi}){p.Start();p.StandardInput.Close();var error=p.StandardError.ReadToEndAsync();using(var output=File.Create(path))await p.StandardOutput.BaseStream.CopyToAsync(output);await Task.Run(()=>p.WaitForExit(15000));if(!p.HasExited||p.ExitCode!=0)throw new Exception("Не удалось сохранить снимок: "+await error);await error;}
+   using(var p=new Process{StartInfo=pi}){p.Start();p.StandardInput.Close();var error=p.StandardError.ReadToEndAsync();using(var output=File.Create(path))await p.StandardOutput.BaseStream.CopyToAsync(output);await Task.Run(()=>p.WaitForExit(15000));if(!p.HasExited||p.ExitCode!=0)throw new Exception("Could not save screenshot: "+await error);await error;}
   }
   public async Task Stop()
   {
-   if(Stopping)return;Stopping=true;stopRequested=true;try{if(Ready){try{await Capture(PreviewPath);}catch{}}
+   if(Stopping)return;Stopping=true;stopRequested=true;bool saved=false;
+   try{
+    if(Ready){try{await Capture(PreviewPath);}catch{}}
     if(Mirror!=null&&!Mirror.HasExited)Runner.KillTree(Mirror);Mirror=null;
-    if(Serial!=null){Status("Сохраняем Quick Boot…");await Adb("emu","kill");if(Emulator!=null&&!Emulator.HasExited)await Task.Run(()=>Emulator.WaitForExit(45000));}
-    Ready=false;Serial=null;Status("Android остановлен · Quick Boot сохранён");
-   }finally{Stopping=false;}
+    if(Emulator!=null&&!Emulator.HasExited){
+     if(Ready&&Serial!=null){try{Status("Saving Quick Boot…");await Adb("emu","kill");saved=await Task.Run(()=>Emulator.WaitForExit(45000));}catch(Exception ex){Log("Graceful shutdown failed: "+ex.Message);}}
+     if(!Emulator.HasExited){Runner.KillTree(Emulator);await Task.Run(()=>Emulator.WaitForExit(10000));}
+    }
+    Status(saved?"Android stopped · Quick Boot saved":"Android stopped");
+   }finally{Ready=false;Serial=null;Stopping=false;}
   }
  }
 

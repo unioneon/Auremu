@@ -1,4 +1,4 @@
-param([string]$Version='0.1.0',[string]$ScrcpyDirectory)
+param([string]$Version='0.1.1',[string]$ScrcpyDirectory)
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot
 & (Join-Path $root 'build.ps1')

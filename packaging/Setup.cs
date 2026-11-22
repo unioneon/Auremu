@@ -34,7 +34,7 @@ namespace AuremuInstaller {
    Type shellType=Type.GetTypeFromProgID("WScript.Shell");dynamic shell=Activator.CreateInstance(shellType);dynamic shortcut=shell.CreateShortcut(Shortcut);
    shortcut.TargetPath=Path.Combine(Target,"bin","Auremu.exe");shortcut.WorkingDirectory=Target;shortcut.Description="Auremu Android emulator";shortcut.Save();
    using(var key=Registry.CurrentUser.CreateSubKey(RegistryPath)){
-    key.SetValue("DisplayName","Auremu");key.SetValue("DisplayVersion","0.1.0");key.SetValue("Publisher","unioneon");key.SetValue("InstallLocation",Target);key.SetValue("DisplayIcon",Path.Combine(Target,"bin","Auremu.exe"));
+    key.SetValue("DisplayName","Auremu");key.SetValue("DisplayVersion","0.1.1");key.SetValue("Publisher","unioneon");key.SetValue("InstallLocation",Target);key.SetValue("DisplayIcon",Path.Combine(Target,"bin","Auremu.exe"));
     key.SetValue("UninstallString","\""+uninstaller+"\" --uninstall");key.SetValue("NoModify",1);key.SetValue("NoRepair",1);
    }
   }
@@ -67,7 +67,7 @@ namespace AuremuInstaller {
     stack.Children.Add(new TextBlock{Text=Target,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,18,0,18),Foreground=Brushes.SlateGray});
     var status=new TextBlock{Text="Windows 10/11 x64 · .NET Framework 4.8 · WHPX",TextWrapping=TextWrapping.Wrap};stack.Children.Add(status);
     var button=new Button{Content="Install Auremu",FontSize=16,Height=44,Margin=new Thickness(0,24,0,0)};stack.Children.Add(button);
-    var window=new Window{Title="Install Auremu 0.1.0",Width=580,SizeToContent=SizeToContent.Height,ResizeMode=ResizeMode.NoResize,WindowStartupLocation=WindowStartupLocation.CenterScreen,Background=new SolidColorBrush(Color.FromRgb(246,244,255)),Content=stack};
+    var window=new Window{Title="Install Auremu 0.1.1",Width=580,SizeToContent=SizeToContent.Height,ResizeMode=ResizeMode.NoResize,WindowStartupLocation=WindowStartupLocation.CenterScreen,Background=new SolidColorBrush(Color.FromRgb(246,244,255)),Content=stack};
     bool busy=false,done=false;window.Closing+=(s,e)=>{if(busy)e.Cancel=true;};
     button.Click+=async(s,e)=>{if(done){Process.Start(Path.Combine(Target,"bin","Auremu.exe"));window.Close();return;}busy=true;button.IsEnabled=false;status.Text="Installing…";try{await Task.Run((Action)Install);done=true;button.Content="Launch Auremu";status.Text="Installed. Your first launch will guide you through Android setup.";}catch(Exception ex){status.Text=ex.Message;}finally{busy=false;button.IsEnabled=true;}};
     return app.Run(window);
