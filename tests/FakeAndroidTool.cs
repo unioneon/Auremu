@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
 
 // Protocol fixture only: no virtual machine and no network access.
 class FakeAndroidTool
@@ -10,7 +13,13 @@ class FakeAndroidTool
   var tool = Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs()[0]);
   var sdk = Environment.GetEnvironmentVariable("ANDROID_HOME");
   var avds = Environment.GetEnvironmentVariable("ANDROID_AVD_HOME");
-  File.AppendAllText(Path.Combine(sdk,"calls.txt"),tool+" "+string.Join(" | ",args)+"\n");
+  string gateId;
+  using(var sha=SHA256.Create())gateId=BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(Path.GetFullPath(sdk).ToUpperInvariant()))).Replace("-","");
+  using(var gate=new Mutex(false,@"Local\AuremuFixture-"+gateId)){
+   bool held=false;
+   try{try{held=gate.WaitOne(10000);}catch(AbandonedMutexException){held=true;}if(!held)throw new IOException("Fixture log lock timed out.");File.AppendAllText(Path.Combine(sdk,"calls.txt"),tool+" "+string.Join(" | ",args)+"\n");}
+   finally{if(held)gate.ReleaseMutex();}
+  }
   if(tool=="emulator")
   {
    if(args.Contains("-list-avds")) foreach(var dir in Directory.GetDirectories(avds,"*.avd")) Console.WriteLine(Path.GetFileNameWithoutExtension(dir));
